@@ -844,6 +844,7 @@ void BlockNonlinearForm::Mult(const Vector &x, Vector &y) const
       }
       by.GetBlock(s).SetSubVector(*ess_tdofs[s], 0.0);
    }
+   by.SyncFromBlocks();
 }
 
 void BlockNonlinearForm::ComputeGradientBlocked(const BlockVector &bx) const
