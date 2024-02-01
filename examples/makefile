@@ -23,12 +23,12 @@ MFEM_LIB_FILE = mfem_is_not_built
 
 SEQ_EXAMPLES = ex0 ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex14 ex15 ex16 \
   ex17 ex18 ex19 ex20 ex21 ex22 ex23 ex24 ex25 ex26 ex27 ex28 ex29 ex30 \
-  ex31 ex33 ex34 ex36 ex37
+  ex31 ex33 ex34 ex36 ex37 ex_ad_based_block_nl_solver
 PAR_EXAMPLES = ex0p ex1p ex2p ex3p ex4p ex5p ex6p ex7p ex8p ex9p ex10p ex11p \
   ex12p ex13p ex14p ex15p ex16p ex17p ex18p ex19p ex20p ex21p ex22p ex24p \
   ex25p ex26p ex27p ex28p ex29p ex30p ex31p ex32p ex33p ex34p ex35p ex36p \
 	ex37p
-SEQ_DEVICE_EXAMPLES = ex1 ex3 ex4 ex5 ex6 ex9 ex22 ex24 ex25 ex26 ex34
+SEQ_DEVICE_EXAMPLES = ex1 ex3 ex4 ex5 ex6 ex9 ex22 ex24 ex25 ex26 ex34 ex_ad_based_block_nl_solver
 PAR_DEVICE_EXAMPLES = ex1p ex2p ex3p ex4p ex5p ex6p ex7p ex9p ex13p ex22p \
   ex24p ex25p ex26p ex34p ex35p
 
@@ -65,6 +65,7 @@ endif
 ifeq ($(MFEM_USE_CALIPER),YES)
    SUBDIRS += caliper
 endif
+SUBDIRS += /home/jon/mfem/mfem-4.6/miniapps/autodiff
 
 SUBDIRS_ALL = $(addsuffix /all,$(SUBDIRS))
 SUBDIRS_TEST = $(addsuffix /test,$(SUBDIRS))
@@ -78,11 +79,14 @@ SUBDIRS_TPRINT = $(addsuffix /test-print,$(SUBDIRS))
 # Remove built-in rule
 %: %.cpp
 
+INCFLAGS = -I/home/jon/mfem/mfem-4.6/miniapps/autodiff
+INCFLAGS += -I/home/jon/mfem/mfem-4.6/general
 # Replace the default implicit rule for *.cpp files
 %: $(SRC)%.cpp $(MFEM_LIB_FILE) $(CONFIG_MK)
-	$(MFEM_CXX) $(MFEM_FLAGS) $< -o $@ $(MFEM_LIBS)
+	$(MFEM_CXX) $(MFEM_FLAGS) $< -o $@ $(MFEM_LIBS) $(INCFLAGS)
 
 all: $(EXAMPLES) $(SUBDIRS_ALL)
+
 
 .PHONY: $(SUBDIRS_ALL) $(SUBDIRS_TEST) $(SUBDIRS_CLEAN) $(SUBDIRS_TPRINT)
 $(SUBDIRS_ALL) $(SUBDIRS_TEST) $(SUBDIRS_CLEAN):
