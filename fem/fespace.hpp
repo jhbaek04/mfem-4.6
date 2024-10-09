@@ -561,6 +561,11 @@ public:
    bool Conforming() const { return mesh->Conforming() && cP == NULL; }
    bool Nonconforming() const { return mesh->Nonconforming() || cP != NULL; }
 
+   void SetProlongation(const SparseMatrix& p);
+   void SetRestriction(const SparseMatrix& r);
+   void LoadProlongation(std::istream& in);
+   void LoadRestriction(std::istream& in);
+
    /// Sets the order of the i'th finite element.
    /** By default, all elements are assumed to be of fec->GetOrder(). Once
        SetElementOrder is called, the space becomes a variable order space. */

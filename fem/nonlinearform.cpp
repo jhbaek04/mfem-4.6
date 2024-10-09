@@ -647,6 +647,7 @@ double BlockNonlinearForm::GetEnergy(const Vector &x) const
 void BlockNonlinearForm::MultBlocked(const BlockVector &bx,
                                      BlockVector &by) const
 {
+   std::cout << "\033[38;5;214m" << "MultBlocked begins" << "\033[0m" << std::endl;
    Array<Array<int> *>vdofs(fes.Size());
    Array<Array<int> *>vdofs2(fes.Size());
    Array<Vector *> el_x(fes.Size());
@@ -667,6 +668,8 @@ void BlockNonlinearForm::MultBlocked(const BlockVector &bx,
       vdofs[s] = new Array<int>;
       vdofs2[s] = new Array<int>;
    }
+
+   std::cout << "\033[38;5;214m" << "dnfi.Size() = " << dnfi.Size() << "\033[0m" << std::endl;
 
    if (dnfi.Size())
    {
@@ -695,6 +698,9 @@ void BlockNonlinearForm::MultBlocked(const BlockVector &bx,
          }
       }
    }
+   std::cout << "\033[38;5;214m" << "fnfi done " << "\033[0m" << std::endl;
+
+   std::cout << "\033[38;5;214m" << "fnfi.Size() = " << fnfi.Size() << "\033[0m" << std::endl;
 
    if (fnfi.Size())
    {
@@ -733,6 +739,9 @@ void BlockNonlinearForm::MultBlocked(const BlockVector &bx,
          }
       }
    }
+   std::cout << "\033[38;5;214m" << "fnfi done" << "\033[0m" << std::endl;
+
+   std::cout << "\033[38;5;214m" << "bfnfi.Size() = " << bfnfi.Size() << "\033[0m" << std::endl;
 
    if (bfnfi.Size())
    {
@@ -792,6 +801,7 @@ void BlockNonlinearForm::MultBlocked(const BlockVector &bx,
          }
       }
    }
+   std::cout << "\033[38;5;214m" << "bfnfi done" << "\033[0m" << std::endl;
 
    for (int s=0; s<fes.Size(); ++s)
    {
@@ -815,6 +825,7 @@ const BlockVector &BlockNonlinearForm::Prolongate(const BlockVector &bx) const
       {
          P[s]->Mult(bx.GetBlock(s), aux1.GetBlock(s));
       }
+      aux1.SyncFromBlocks();
       return aux1;
    }
    return bx;
@@ -822,6 +833,7 @@ const BlockVector &BlockNonlinearForm::Prolongate(const BlockVector &bx) const
 
 void BlockNonlinearForm::Mult(const Vector &x, Vector &y) const
 {
+   std::cout << "\033[38;5;214m" << "BlockNonlinearForm::Mult begins" << "\033[0m" << std::endl;
    BlockVector bx(const_cast<Vector&>(x), block_trueOffsets);
    BlockVector by(y, block_trueOffsets);
 

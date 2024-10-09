@@ -1818,6 +1818,7 @@ void NewtonSolver::SetOperator(const Operator &op)
 
 void NewtonSolver::Mult(const Vector &b, Vector &x) const
 {
+   std::cout << "\033[38;5;214m" << "NewtonSolver::Mult begins" << "\033[0m" << std::endl;
    MFEM_ASSERT(oper != NULL, "the Operator is not set (use SetOperator).");
    MFEM_ASSERT(prec != NULL, "the Solver is not set (use SetSolver).");
 
@@ -1832,7 +1833,9 @@ void NewtonSolver::Mult(const Vector &b, Vector &x) const
 
    ProcessNewState(x);
 
+   std::cout << "\033[33m" << "Right before oper->Mult(x, r)" << "\033[0m" << std::endl;
    oper->Mult(x, r);
+   std::cout << "\033[33m" << "NewtonSolver::Mult: oper->Mult(x, r) done" << "\033[0m" << std::endl;
    if (have_b)
    {
       r -= b;
@@ -1884,7 +1887,9 @@ void NewtonSolver::Mult(const Vector &b, Vector &x) const
          AdaptiveLinRtolPreSolve(x, it, norm);
       }
 
+      std::cout << "\033[33m" << "NewtonSolver::Mult: before prec->Mult(r, c)" << "\033[0m" << std::endl;
       prec->Mult(r, c); // c = [DF(x_i)]^{-1} [F(x_i)-b]
+      std::cout << "\033[33m" << "NewtonSolver::Mult: after prec->Mult(r, c)" << "\033[0m" << std::endl;
 
       if (lin_rtol_type)
       {

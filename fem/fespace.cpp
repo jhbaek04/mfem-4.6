@@ -324,7 +324,9 @@ void FiniteElementSpace::GetFaceVDofs(int i, Array<int> &vdofs) const
 void FiniteElementSpace::GetEdgeVDofs(int i, Array<int> &vdofs) const
 {
    GetEdgeDofs(i, vdofs);
+   std::cout << "\033[33m" << "after GetEdgeDofs" << "\033[0m" << std::endl;
    DofsToVDofs(vdofs);
+   std::cout << "\033[33m" << "after DofsToVDofs" << "\033[0m" << std::endl;
 }
 
 void FiniteElementSpace::GetVertexVDofs(int i, Array<int> &vdofs) const
@@ -549,7 +551,13 @@ void FiniteElementSpace::GetEssentialVDofs(const Array<int> &bdr_attr_is_ess,
    if (Nonconforming())
    {
       Array<int> bdr_verts, bdr_edges;
+      std::cout << "\033[33m" << "before GetBoundaryClosure" << "\033[0m" << std::endl;
       mesh->ncmesh->GetBoundaryClosure(bdr_attr_is_ess, bdr_verts, bdr_edges);
+      std::cout << "\033[33m" << "after GetBoundaryClosure" << "\033[0m" << std::endl;
+
+      std::cout << "\033[33m" << "bdr_verts.Size() = " << bdr_verts.Size() << "\033[0m" << std::endl;
+      std::cout << "\033[33m" << "bdr_edges.Size() = " << bdr_edges.Size() << "\033[0m" << std::endl;
+      std::cout << "\033[33m" << "bdr_edges[0] = " << bdr_edges[0] << "\033[0m" << std::endl;
 
       for (int i = 0; i < bdr_verts.Size(); i++)
       {
@@ -566,12 +574,15 @@ void FiniteElementSpace::GetEssentialVDofs(const Array<int> &bdr_attr_is_ess,
             mark_dofs(dofs, ess_vdofs);
          }
       }
+      std::cout << "\033[33m" << "after GetVertexVDofs" << "\033[0m" << std::endl;
       for (int i = 0; i < bdr_edges.Size(); i++)
       {
          if (component < 0)
          {
+            if(bdr_edges[i]>-1){
             GetEdgeVDofs(bdr_edges[i], vdofs);
             mark_dofs(vdofs, ess_vdofs);
+            }
          }
          else
          {
@@ -581,6 +592,7 @@ void FiniteElementSpace::GetEssentialVDofs(const Array<int> &bdr_attr_is_ess,
             mark_dofs(dofs, ess_vdofs);
          }
       }
+      std::cout << "\033[33m" << "after GetEdgeVDofs" << "\033[0m" << std::endl;
    }
 }
 
@@ -3677,6 +3689,69 @@ FiniteElementCollection *FiniteElementSpace::Load(Mesh *m, std::istream &input)
    Constructor(m, nurbs_ext, r_fec, vdim, ord);
 
    return r_fec;
+}
+
+
+void FiniteElementSpace::SetProlongation(const SparseMatrix& p)
+{
+   if( cP == NULL )
+      cP.reset(new SparseMatrix(p));
+   else
+      *cP = p;
+   cP_is_set = true;
+}
+
+void FiniteElementSpace::SetRestriction(const SparseMatrix& r)
+{
+   if( cR == NULL )
+      cR.reset(new SparseMatrix(r));
+   else
+      *cR = r;
+}
+
+
+struct SparsityData
+{
+   Array<int> mSizes;
+   Array<int> mRowOffsets;
+   Array<int> mColIndices;
+   Array<double> mData;
+};
+SparsityData LoadSparsityData(std::istream& in)
+{
+   Array<int> sizes(2);
+   Array<int> row_offsets;
+   Array<int> col_indices;
+   Array<double> data;
+   sizes.Load( in, 1 );
+   row_offsets.Load( in, 0 );
+   col_indices.Load( in, 0 );
+   data.Load( in, 0 );
+
+   return SparsityData( {sizes, row_offsets, col_indices, data} );
+}
+void FiniteElementSpace::LoadProlongation(std::istream& in)
+{
+   SparsityData sparsity_data = LoadSparsityData(in);
+   SparseMatrix p = SparseMatrix(sparsity_data.mRowOffsets.GetData(), 
+                                 sparsity_data.mColIndices.GetData(), 
+                                 sparsity_data.mData.GetData(), 
+                                 sparsity_data.mSizes[0], 
+                                 sparsity_data.mSizes[1],
+                                 false, false, false);
+   SetProlongation(p);
+}
+
+void FiniteElementSpace::LoadRestriction(std::istream& in)
+{
+   SparsityData sparsity_data = LoadSparsityData(in);
+   SparseMatrix r = SparseMatrix(sparsity_data.mRowOffsets.GetData(), 
+                                 sparsity_data.mColIndices.GetData(), 
+                                 sparsity_data.mData.GetData(), 
+                                 sparsity_data.mSizes[0], 
+                                 sparsity_data.mSizes[1],
+                                 false, false, false);
+   SetRestriction(r);
 }
 
 } // namespace mfem
