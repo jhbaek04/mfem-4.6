@@ -632,6 +632,7 @@ namespace mfem
 		const mfem::Vector& functionCoefficients(){ return mFuncCoeffs; }
 		const std::vector< mfem::GridFunction >& nodalCoordinates(){ return mNodalCoordinates; }
 		const mfem::Array< int >& offset(){ return mOffsets; }
+		mfem::Array< mfem::FiniteElementSpace* > functionSpaces(){ return mFESpaces; }
 
 		private:
 		void setFunctionSpace()
@@ -827,5 +828,42 @@ int main(int argc, char *argv[])
 		std::cout << "\nrelative error norm = " << norm_rel << std::endl;
 
 		MFEM_ASSERT( norm_rel < 1e-6, "norm_rel < 1e-6" );
+
+		// output
+		mfem::Array< mfem::FiniteElementSpace* > fespaces = solver.functionSpaces();
+		std::vector< mfem::Vector > x( num_variables );
+		for( int s = 0; s < num_variables; ++s ){
+			x[ s ].SetSize( offsets[s+1]-offsets[s] );
+			for( int dof = 0; dof < offsets[s+1]-offsets[s]; ++dof ){
+				x[ s ][ dof ] = solution_coeff_vec[ offsets[s] + dof ];
+			}
+		}
+		mfem::GridFunction u, p, T;
+		u.MakeRef(fespaces[0], x[0], 0);
+		p.MakeRef(fespaces[1], x[1], 0);
+		T.MakeRef(fespaces[2], x[2], 0);
+		{
+			mfem::ParaViewDataCollection paraview_dc("velocity", &mesh);
+			paraview_dc.SetPrefixPath("/mnt/c/Users/jhbae/Coreform/work/mfem/test/");
+			paraview_dc.SetLevelsOfDetail(orders[0]);
+			paraview_dc.SetCycle(0);
+			paraview_dc.SetDataFormat(mfem::VTKFormat::BINARY);
+			paraview_dc.SetHighOrderOutput(true);
+			paraview_dc.SetTime(0.0); // set the time
+			paraview_dc.RegisterField("velocity",&u);
+			paraview_dc.Save();
+		}
+		{
+			mfem::ParaViewDataCollection paraview_dc("pressure_temperature", &mesh);
+			paraview_dc.SetPrefixPath("/mnt/c/Users/jhbae/Coreform/work/mfem/test/");
+			paraview_dc.SetLevelsOfDetail(orders[1]);
+			paraview_dc.SetCycle(0);
+			paraview_dc.SetDataFormat(mfem::VTKFormat::BINARY);
+			paraview_dc.SetHighOrderOutput(true);
+			paraview_dc.SetTime(0.0); // set the time
+			paraview_dc.RegisterField("pressure",&p);
+			paraview_dc.RegisterField("temperature",&T);
+			paraview_dc.Save();
+		}
       return 0;
 }
